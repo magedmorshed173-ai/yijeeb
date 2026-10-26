@@ -1,0 +1,41 @@
+# Yijeeb Chat — Render Blueprint
+# النشر: Render → New → Blueprint → اختر مستودع yijeeb
+services:
+  - type: web
+    name: yijeeb-chat
+    runtime: node
+    plan: free
+    region: frankfurt
+    rootDir: server
+    buildCommand: npm install
+    startCommand: node server.js
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_VERSION
+        value: "22.14.0"
+      - key: NODE_ENV
+        value: production
+      - key: JWT_SECRET
+        generateValue: true
+      - key: STATS_KEY
+        generateValue: true
+
+# ⚠️ الخطة المجانية تفقد البيانات عند كل إعادة نشر (للاختبار فقط)
+# للاستخدام الحقيقي: بدّل plan إلى starter وأضف قرصًا دائمًا:
+#
+#    plan: starter
+#    disk:
+#      name: yijeeb-data
+#      mountPath: /var/data
+#      sizeGB: 1
+#    envVars:
+#      - key: DATA_DIR
+#        value: /var/data
+#      - key: NODE_VERSION
+#        value: "22.14.0"
+#      - key: NODE_ENV
+#        value: production
+#      - key: JWT_SECRET
+#        generateValue: true
+#      - key: STATS_KEY
+#        generateValue: true

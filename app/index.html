@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#042F2E" />
+  <link rel="manifest" href="/manifest.json" />
+  <link rel="icon" href="/icons/icon-192.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/style.css" />
+  <title>يجيب — دردشة</title>
+</head>
+<body>
+
+<!-- ===== AUTH ===== -->
+<section id="auth" class="auth">
+  <div class="auth-card">
+    <div class="logo-row">
+      <svg width="44" height="44" viewBox="0 0 48 48"><rect x="4" y="6" width="40" height="30" rx="10" fill="#0D9488"/><path d="M14 36v8l10-8z" fill="#0D9488"/><circle cx="24" cy="21" r="4.5" fill="#5EEAD4"/></svg>
+      <h1>يجيب</h1>
+    </div>
+    <p data-i18n="tagline">يردّ. يجيب. يوصّل.</p>
+    <div class="tabs">
+      <button class="tab active" data-mode="login" data-i18n="login">دخول</button>
+      <button class="tab" data-mode="register" data-i18n="register">حساب جديد</button>
+    </div>
+    <form id="auth-form">
+      <input id="username" data-i18n-ph="username" placeholder="اسم المستخدم" autocomplete="username" maxlength="24" required />
+      <input id="password" type="password" data-i18n-ph="password" placeholder="كلمة المرور" autocomplete="current-password" maxlength="72" required />
+      <select id="locale">
+        <option value="ar">العربية</option>
+        <option value="en">English</option>
+        <option value="fr">Français</option>
+      </select>
+      <button type="submit" id="auth-submit" data-i18n="login">دخول</button>
+    </form>
+    <p id="auth-error" class="error"></p>
+  </div>
+</section>
+
+<!-- ===== APP ===== -->
+<main id="chat" class="app hidden">
+  <header>
+    <button id="back" class="icon hidden" title="رجوع">→</button>
+    <div class="avatar hidden" id="room-avatar"></div>
+    <div class="header-title">
+      <h2 id="room-title">يجيب</h2>
+      <span id="status"></span>
+    </div>
+    <div class="header-actions">
+      <span id="me" class="me"></span>
+      <button id="new-chat" class="icon" title="+">+</button>
+      <button id="stories-btn" class="icon" title="◉">◉</button>
+      <button id="settings-btn" class="icon" title="⚙">⚙</button>
+      <button id="rotate-key" class="icon hidden" title="🔄">🔄</button>
+      <button id="logout" class="icon" title="⎋">⎋</button>
+    </div>
+  </header>
+
+  <section id="list" class="list"></section>
+
+  <section id="chat-area" class="chat hidden">
+    <div class="search-row">
+      <input id="search" data-i18n-ph="search" placeholder="ابحث في الرسائل..." />
+    </div>
+    <div id="messages" class="messages"></div>
+    <p id="typing" class="typing"></p>
+    <div id="reply-bar" class="reply-bar hidden">
+      <div class="reply-chip">
+        <small id="reply-name"></small>
+        <span id="reply-peek"></span>
+      </div>
+      <button id="reply-cancel" class="icon">✕</button>
+    </div>
+    <div id="rec-bar" class="rec-bar hidden">
+      <span class="rec-dot"></span>
+      <span id="rec-time">0:00</span>
+      <span id="rec-label" data-i18n="recording" style="flex:1">جاري التسجيل</span>
+      <button id="rec-cancel" class="icon" data-i18n="recCancel">إلغاء</button>
+      <button id="rec-send" class="send" data-i18n="recSend">➤</button>
+    </div>
+    <form id="send-form" class="composer">
+      <button type="button" id="attach-btn" class="icon round">📎</button>
+      <input type="file" id="file-input" hidden />
+      <button type="button" id="mic-btn" class="icon round">🎤</button>
+      <input id="msg-input" autocomplete="off" data-i18n-ph="writeMsg" placeholder="اكتب رسالة..." />
+      <button type="submit" class="send">➤</button>
+    </form>
+  </section>
+</main>
+
+<!-- ===== GROUP MODAL ===== -->
+<section id="group-modal" class="modal hidden">
+  <div class="modal-card">
+    <h3 data-i18n="newGroup">مجموعة جديدة</h3>
+    <form id="group-form">
+      <input id="group-name" data-i18n-ph="groupName" placeholder="اسم المجموعة" required maxlength="64" />
+      <textarea id="group-members" data-i18n-ph="members" placeholder="أعضاء (مفصولة بفواصل)" rows="3"></textarea>
+      <select id="group-type">
+        <option value="group" data-i18n="group">مجموعة</option>
+        <option value="channel" data-i18n="channel">قناة</option>
+      </select>
+      <button type="submit" data-i18n="create">إنشاء</button>
+    </form>
+    <button id="close-group-modal" class="ghost" data-i18n="cancel">إلغاء</button>
+  </div>
+</section>
+
+<!-- ===== RECOVERY MODAL ===== -->
+<section id="recovery-modal" class="modal hidden">
+  <div class="modal-card">
+    <h3 data-i18n="saveCodeTitle">احفظ رمز الاستعادة</h3>
+    <p class="hint" data-i18n="saveCodeNote">هذا الرمز هو الطريقة الوحيدة لاستعادة رسائلك.</p>
+    <div id="recovery-display" class="code-box"></div>
+    <button id="copy-recovery" class="ghost" data-i18n="copy">نسخ</button>
+    <label class="check-row">
+      <input type="checkbox" id="ack-recovery" />
+      <span data-i18n="ackSaved">حفظته في مكان آمن</span>
+    </label>
+    <button id="confirm-recovery" disabled class="primary" data-i18n="cont">متابعة</button>
+  </div>
+</section>
+
+<!-- ===== STORIES MODAL ===== -->
+<section id="stories-modal" class="modal hidden">
+  <div class="modal-card">
+    <h3 data-i18n="stories">ستوريات (24 ساعة)</h3>
+    <form id="story-form">
+      <input id="story-input" data-i18n-ph="storyPlaceholder" placeholder="بماذا تريد أن تجيب؟" maxlength="280" />
+      <button type="submit" data-i18n="post">نشر</button>
+    </form>
+    <div id="stories-list" class="stories-list"></div>
+    <button id="close-stories" class="ghost" data-i18n="close">إغلاق</button>
+  </div>
+</section>
+
+<!-- ===== SETTINGS MODAL ===== -->
+<section id="settings-modal" class="modal hidden">
+  <div class="modal-card">
+    <h3 data-i18n="settings">الإعدادات</h3>
+    <div class="set-row">
+      <span data-i18n="theme">المظهر</span>
+      <select id="theme-select">
+        <option value="dark" data-i18n="dark">داكن</option>
+        <option value="light" data-i18n="light">فاتح</option>
+      </select>
+    </div>
+    <details class="set-details">
+      <summary data-i18n="changePass">تغيير كلمة المرور</summary>
+      <form id="pass-form">
+        <input id="old-pass" type="password" data-i18n-ph="oldPass" placeholder="القديمة" autocomplete="current-password" />
+        <input id="new-pass" type="password" data-i18n-ph="newPass" placeholder="الجديدة" autocomplete="new-password" />
+        <button type="submit" class="primary" data-i18n="changePass">تغيير كلمة المرور</button>
+      </form>
+      <p id="pass-msg" class="hint"></p>
+    </details>
+    <button id="push-btn" class="ghost" data-i18n="pushOn">تفعيل الإشعارات</button>
+    <button id="close-settings" class="ghost" data-i18n="close">إغلاق</button>
+  </div>
+</section>
+
+<div id="upload-status" class="upload-status hidden">
+  <div class="upload-bar"><div id="upload-progress"></div></div>
+  <span id="upload-label">جاري الرفع...</span>
+</div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script src="/i18n.js"></script>
+<script src="/crypto.js"></script>
+<script src="/app.js"></script>
+</body>
+</html>
