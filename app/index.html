@@ -51,6 +51,8 @@
     </div>
     <div class="header-actions">
       <span id="me" class="me"></span>
+      <button id="call-audio" class="icon hidden" title="📞">📞</button>
+      <button id="call-video" class="icon hidden" title="🎥">🎥</button>
       <button id="new-chat" class="icon" title="+">+</button>
       <button id="stories-btn" class="icon" title="◉">◉</button>
       <button id="settings-btn" class="icon" title="⚙">⚙</button>
@@ -165,6 +167,23 @@
   <div class="upload-bar"><div id="upload-progress"></div></div>
   <span id="upload-label">جاري الرفع...</span>
 </div>
+
+<!-- ===== CALL UI (WebRTC) ===== -->
+<section id="call-ui" class="call-ui hidden">
+  <video id="remote-video" class="remote-video" autoplay playsinline></video>
+  <video id="local-video" class="local-video" autoplay playsinline muted></video>
+  <div class="call-top">
+    <div class="call-avatar" id="call-avatar">?</div>
+    <h3 id="call-name"></h3>
+    <p id="call-status"></p>
+  </div>
+  <div class="call-controls">
+    <button id="call-mute" class="ctrl" title="🎤">🎤</button>
+    <button id="call-cam" class="ctrl hidden" title="🎥">🎥</button>
+    <button id="call-accept" class="ctrl accept hidden" title="✓">✓</button>
+    <button id="call-hangup" class="ctrl danger" title="✕">✕</button>
+  </div>
+</section>
 
 <script src="/socket.io/socket.io.js"></script>
 <script src="/i18n.js"></script>

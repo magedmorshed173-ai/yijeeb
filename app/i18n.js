@@ -52,6 +52,12 @@ window.I18N = {
     errPass: "كلمة المرور 6–72 حرفًا",
     keyUpdated: "تم تحديث المفتاح، أعد الإرسال",
     newMsgPush: "أرسل رسالة جديدة", newFilePush: "أرسل مرفقًا",
+    callAudio: "مكالمة صوتية", callVideo: "مكالمة فيديو",
+    ringing: "جاري الرنين…", incomingAudio: "مكالمة صوتية واردة", incomingVideo: "مكالمة فيديو واردة",
+    callConnecting: "جاري الاتصال…", callEnded: "انتهت المكالمة",
+    callRejected: "رفض الاتصال", callBusy: "المستخدم مشغول الآن", callOffline: "المستخدم غير متصل",
+    callFailed: "فشل الاتصال", callForbidden: "لا توجد محادثة مشتركة",
+    callDenied: "لم يُسمح بالوصول للميكروفون/الكاميرا",
   },
   en: {
     appName: "Yijeeb",
@@ -106,6 +112,12 @@ window.I18N = {
     errPass: "Password must be 6–72 chars",
     keyUpdated: "Key updated, resend",
     newMsgPush: "sent a new message", newFilePush: "sent an attachment",
+    callAudio: "Voice call", callVideo: "Video call",
+    ringing: "Ringing…", incomingAudio: "Incoming voice call", incomingVideo: "Incoming video call",
+    callConnecting: "Connecting…", callEnded: "Call ended",
+    callRejected: "Call declined", callBusy: "User is busy", callOffline: "User is offline",
+    callFailed: "Call failed", callForbidden: "No shared conversation",
+    callDenied: "Microphone/camera access denied",
   },
   fr: {
     appName: "Yijeeb",
@@ -160,6 +172,12 @@ window.I18N = {
     errPass: "6–72 caractères",
     keyUpdated: "Clé mise à jour, renvoyez",
     newMsgPush: "a envoyé un message", newFilePush: "a envoyé un fichier",
+    callAudio: "Appel audio", callVideo: "Appel vidéo",
+    ringing: "Ça sonne…", incomingAudio: "Appel audio entrant", incomingVideo: "Appel vidéo entrant",
+    callConnecting: "Connexion…", callEnded: "Appel terminé",
+    callRejected: "Appel refusé", callBusy: "Utilisateur occupé", callOffline: "Utilisateur hors ligne",
+    callFailed: "Échec de l'appel", callForbidden: "Aucune conversation commune",
+    callDenied: "Accès micro/caméra refusé",
   },
 };
 

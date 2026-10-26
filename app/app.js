@@ -197,6 +197,7 @@ async function enterApp() {
 }
 
 function leaveApp() {
+  endCall(false);
   if (state.socket) state.socket.disconnect();
   state.socket = null; state.token = null; state.user = null;
   state.envCache.clear(); state.online.clear();
@@ -275,6 +276,22 @@ function connectSocket() {
     state.activeKey = null;
     await ensureGroupKey(state.activeConv);
   });
+
+  // ===== Calls signaling =====
+  state.socket.on("call:incoming", onIncomingCall);
+  state.socket.on("call:answered", onCallAnswered);
+  state.socket.on("call:ice", onCallIce);
+  state.socket.on("call:rejected", () => { endCallLocal(); flashStatus(t("callRejected")); });
+  state.socket.on("call:cancelled", () => { if (call.role === "callee") { endCallLocal(); flashStatus(t("callEnded")); } });
+  state.socket.on("call:ended", () => { endCallLocal(); flashStatus(t("callEnded")); });
+  state.socket.on("call:taken", () => { if (call.role === "callee" && !call.accepted) endCallLocal(); });
+  state.socket.on("call:error", ({ reason }) => {
+    const wasActive = !!call.pc;
+    endCallLocal();
+    if (!wasActive) return;
+    const map = { offline: "callOffline", busy: "callBusy", forbidden: "callForbidden" };
+    flashStatus(t(map[reason] || "callFailed"));
+  });
 }
 
 function updateDmStatus() {
@@ -347,6 +364,8 @@ async function openConversation(conv) {
   $("back").classList.remove("hidden");
   $("room-title").textContent = convTitle(conv);
   $("rotate-key").classList.toggle("hidden", conv.type === "dm");
+  $("call-audio").classList.toggle("hidden", conv.type !== "dm");
+  $("call-video").classList.toggle("hidden", conv.type !== "dm");
   $("messages").innerHTML = "";
   $("typing").textContent = "";
   $("room-avatar").classList.remove("hidden");
@@ -888,8 +907,209 @@ $("push-btn").addEventListener("click", async () => {
   } catch { alert(t("pushErr")); }
 });
 
+// ===== CALLS (WebRTC — الوسائط مشفرة DTLS-SRTP بين الطرفين مباشرة) =====
+const ICE_CONFIG = {
+  iceServers: [
+    { urls: ["stun:stun.cloudflare.com:3478", "stun:openrelay.metered.ca:80"] },
+    { urls: "turn:openrelay.metered.ca:80", username: "openrelayproject", credential: "openrelayproject" },
+    { urls: "turn:openrelay.metered.ca:443?transport=tcp", username: "openrelayproject", credential: "openrelayproject" },
+  ],
+};
+const call = { pc: null, role: null, peerId: 0, video: false, local: null, pendingOffer: null,
+  ringT: null, audioCtx: null, durT: null, timeout: null, accepted: false, connected: false };
+
+function showCallUI(mode, name, statusKey) {
+  $("call-ui").classList.remove("hidden");
+  $("call-ui").classList.toggle("active", mode === "active");
+  $("call-name").textContent = name || "";
+  $("call-status").textContent = statusKey ? t(statusKey) : "";
+  $("call-avatar").textContent = (name || "?").slice(0, 2).toUpperCase();
+  $("call-avatar").style.background = avColor(name || "?");
+  $("call-accept").classList.toggle("hidden", mode !== "incoming");
+  $("call-cam").classList.toggle("hidden", !call.video || mode === "incoming");
+}
+
+function startRing(mode) {
+  stopRing();
+  try {
+    call.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    if (call.audioCtx.state === "suspended") call.audioCtx.resume().catch(() => {});
+    const beep = (freq, dur, at) => {
+      const o = call.audioCtx.createOscillator(), g = call.audioCtx.createGain();
+      o.type = "sine"; o.frequency.value = freq;
+      g.gain.setValueAtTime(0.0001, at);
+      g.gain.exponentialRampToValueAtTime(0.15, at + 0.03);
+      g.gain.exponentialRampToValueAtTime(0.0001, at + dur);
+      o.connect(g).connect(call.audioCtx.destination);
+      o.start(at); o.stop(at + dur + 0.05);
+    };
+    const tick = () => {
+      const t0 = call.audioCtx.currentTime + 0.05;
+      if (mode === "in") { beep(784, 0.32, t0); beep(784, 0.32, t0 + 0.5); }
+      else beep(440, 1.0, t0);
+    };
+    tick();
+    call.ringT = setInterval(tick, mode === "in" ? 2600 : 3200);
+  } catch {}
+}
+function stopRing() {
+  clearInterval(call.ringT); call.ringT = null;
+  if (call.audioCtx) { try { call.audioCtx.close(); } catch {} call.audioCtx = null; }
+}
+
+function showLocalPip() {
+  if (call.video && call.local) $("local-video").srcObject = call.local;
+}
+
+function newPC() {
+  const pc = new RTCPeerConnection(ICE_CONFIG);
+  pc.onicecandidate = (e) => {
+    if (e.candidate) state.socket.emit("call:ice", { to: call.peerId, candidate: e.candidate.toJSON() });
+  };
+  pc.ontrack = (e) => { $("remote-video").srcObject = e.streams[0]; };
+  pc.onconnectionstatechange = () => {
+    if (pc.connectionState === "connected") onCallConnected();
+    else if (pc.connectionState === "failed") { endCallLocal(); flashStatus(t("callFailed")); }
+  };
+  return pc;
+}
+
+async function startCall(video) {
+  if (call.pc || !state.activeConv || state.activeConv.type !== "dm" || !state.activeConv.peerId) return;
+  call.role = "caller"; call.peerId = state.activeConv.peerId; call.video = !!video;
+  try {
+    call.local = await navigator.mediaDevices.getUserMedia({ audio: true, video: video ? { facingMode: "user" } : false });
+  } catch { resetCall(); return alert(t("callDenied")); }
+  showCallUI("outgoing", convTitle(state.activeConv), "ringing");
+  showLocalPip();
+  startRing("out");
+  const pc = newPC(); call.pc = pc;
+  call.local.getTracks().forEach((tr) => pc.addTrack(tr, call.local));
+  try {
+    const offer = await pc.createOffer();
+    await pc.setLocalDescription(offer);
+    state.socket.emit("call:offer", { to: call.peerId, offer: pc.localDescription, video: call.video });
+  } catch { endCallLocal(); return flashStatus(t("callFailed")); }
+  clearTimeout(call.timeout);
+  call.timeout = setTimeout(() => endCall(true), 45000);
+}
+
+function onIncomingCall({ from, name, offer, video }) {
+  if (call.pc) return;
+  call.role = "callee"; call.peerId = from; call.video = !!video;
+  call.pendingOffer = offer; call.accepted = false; call.connected = false;
+  showCallUI("incoming", name || "", call.video ? "incomingVideo" : "incomingAudio");
+  startRing("in");
+  clearTimeout(call.timeout);
+  call.timeout = setTimeout(() => endCall(true), 45000);
+}
+
+async function acceptCall() {
+  if (!call.pendingOffer || call.accepted) return;
+  call.accepted = true;
+  stopRing();
+  showCallUI("connecting", $("call-name").textContent, "callConnecting");
+  try {
+    call.local = await navigator.mediaDevices.getUserMedia({ audio: true, video: call.video ? { facingMode: "user" } : false });
+  } catch { endCall(true); return flashStatus(t("callDenied")); }
+  const pc = newPC(); call.pc = pc;
+  call.local.getTracks().forEach((tr) => pc.addTrack(tr, call.local));
+  try {
+    await pc.setRemoteDescription(call.pendingOffer);
+    const answer = await pc.createAnswer();
+    await pc.setLocalDescription(answer);
+    state.socket.emit("call:answer", { to: call.peerId, answer: pc.localDescription });
+  } catch { endCall(true); return flashStatus(t("callFailed")); }
+  showLocalPip();
+}
+
+async function onCallAnswered({ from, answer }) {
+  if (call.role !== "caller" || call.peerId !== from || !call.pc) return;
+  if (call.pc.signalingState === "stable") return;
+  clearTimeout(call.timeout);
+  stopRing();
+  try { await call.pc.setRemoteDescription(answer); }
+  catch { endCallLocal(); flashStatus(t("callFailed")); }
+}
+
+async function onCallIce({ from, candidate }) {
+  if (call.peerId !== from || !call.pc) return;
+  try { await call.pc.addIceCandidate(candidate); } catch {}
+}
+
+function onCallConnected() {
+  if (!call.pc || call.connected) return;
+  call.connected = true;
+  stopRing(); clearTimeout(call.timeout);
+  showCallUI("active", $("call-name").textContent);
+  let s = 0;
+  $("call-status").textContent = fmtDur(0);
+  clearInterval(call.durT);
+  call.durT = setInterval(() => { s++; $("call-status").textContent = "● " + fmtDur(s); }, 1000);
+}
+
+function endCallLocal() { resetCall(); }
+
+function resetCall() {
+  stopRing();
+  clearTimeout(call.timeout); clearInterval(call.durT);
+  if (call.local) call.local.getTracks().forEach((tr) => tr.stop());
+  if (call.pc) { try { call.pc.close(); } catch {} }
+  call.pc = null; call.role = null; call.peerId = 0; call.video = false;
+  call.local = null; call.pendingOffer = null; call.accepted = false; call.connected = false;
+  $("call-ui").classList.add("hidden");
+  $("call-ui").classList.remove("active");
+  $("remote-video").srcObject = null;
+  $("local-video").srcObject = null;
+  $("call-mute").textContent = "🎤"; $("call-mute").classList.remove("off");
+  $("call-cam").textContent = "🎥"; $("call-cam").classList.remove("off");
+  $("call-cam").classList.add("hidden");
+  $("call-accept").classList.add("hidden");
+}
+
+function endCall(notify = true) {
+  const { role, peerId, connected, accepted } = call;
+  if (notify && peerId && state.socket && state.socket.connected) {
+    if (role === "callee" && !accepted) state.socket.emit("call:reject", { to: peerId });
+    else if (role === "caller" && !connected) state.socket.emit("call:cancel", { to: peerId });
+    else state.socket.emit("call:end", { to: peerId });
+  }
+  resetCall();
+}
+
+function flashStatus(msg) {
+  $("status").textContent = msg;
+  setTimeout(() => {
+    if (call.pc) return;
+    if (state.activeConv && state.activeConv.type === "dm") updateDmStatus();
+    else $("status").textContent = t("connected");
+  }, 2600);
+}
+
+$("call-mute").addEventListener("click", () => {
+  if (!call.local) return;
+  const tr = call.local.getAudioTracks()[0];
+  if (!tr) return;
+  tr.enabled = !tr.enabled;
+  $("call-mute").textContent = tr.enabled ? "🎤" : "🔇";
+  $("call-mute").classList.toggle("off", !tr.enabled);
+});
+$("call-cam").addEventListener("click", () => {
+  if (!call.local) return;
+  const tr = call.local.getVideoTracks()[0];
+  if (!tr) return;
+  tr.enabled = !tr.enabled;
+  $("call-cam").textContent = tr.enabled ? "🎥" : "🚫";
+  $("call-cam").classList.toggle("off", !tr.enabled);
+});
+$("call-accept").addEventListener("click", acceptCall);
+$("call-hangup").addEventListener("click", () => endCall(true));
+$("call-audio").addEventListener("click", () => startCall(false));
+$("call-video").addEventListener("click", () => startCall(true));
+
 // ===== BACK / LOGOUT =====
 $("back").addEventListener("click", () => {
+  endCall(true);
   state.activeConv = null;
   state.activeKey = null;
   state.replyTo = null;

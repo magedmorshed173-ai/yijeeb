@@ -258,6 +258,40 @@ function broadcastPresence(userId, online) {
   for (const c of convs) io.to("conv:" + c.conversation_id).emit("presence", { userId, online });
 }
 
+// ===== Calls (WebRTC signaling) — الوسائط تُنقل طرف-لططف عبر DTLS-SRTP، الخادم يمرر الإشارات فقط =====
+const activeCalls = new Map(); // userId -> peerUserId
+
+function emitToUser(userId, event, payload, exceptSocketId = null) {
+  for (const [, s] of io.sockets.sockets) {
+    if (s.user && s.user.id === userId && s.id !== exceptSocketId) s.emit(event, payload);
+  }
+}
+function userOnline(userId) {
+  for (const [, s] of io.sockets.sockets) if (s.user && s.user.id === userId) return true;
+  return false;
+}
+function usersShareConversation(a, b) {
+  const row = db.prepare(
+    "SELECT COUNT(*) AS n FROM conversation_members a JOIN conversation_members b ON a.conversation_id = b.conversation_id WHERE a.user_id = ? AND b.user_id = ?"
+  ).get(a, b);
+  return row.n > 0;
+}
+function callBusyCheck(socket, to) {
+  if (activeCalls.has(socket.user.id) || activeCalls.has(to)) {
+    socket.emit("call:error", { reason: "busy" });
+    return true;
+  }
+  return false;
+}
+function clearCall(a, b) { activeCalls.delete(a); activeCalls.delete(b); }
+
+function checkCallRate(socket) {
+  const now = Date.now();
+  if (now - socket._msgWindow > 10000) { socket._msgWindow = now; socket._msgCount = 0; }
+  socket._msgCount++;
+  return socket._msgCount <= 60; // مكالمات: ICE مرشحون كثيرون — حد أعلى من الرسائل
+}
+
 io.on("connection", (socket) => {
   const uid = socket.user.id;
   if (!presence.has(uid)) presence.set(uid, new Set());
@@ -369,9 +403,55 @@ io.on("connection", (socket) => {
     socket.to("conv:" + conversationId).emit("read", { conversationId, userId: uid, messageId });
   });
 
+  // ===== Call signaling =====
+  socket.on("call:offer", ({ to, offer, video }) => {
+    if (!checkCallRate(socket)) return;
+    if (!Number.isInteger(to) || to === uid || !offer || offer.type !== "offer" || typeof offer.sdp !== "string") return;
+    if (!usersShareConversation(uid, to)) return socket.emit("call:error", { reason: "forbidden" });
+    if (callBusyCheck(socket, to)) return;
+    if (!userOnline(to)) return socket.emit("call:error", { reason: "offline" });
+    activeCalls.set(uid, to);
+    activeCalls.set(to, uid);
+    emitToUser(to, "call:incoming", { from: uid, name: socket.user.username, offer, video: !!video });
+  });
+
+  socket.on("call:answer", ({ to, answer }) => {
+    if (!checkCallRate(socket)) return;
+    if (activeCalls.get(uid) !== to) return;
+    if (!answer || answer.type !== "answer" || typeof answer.sdp !== "string") return;
+    emitToUser(to, "call:answered", { from: uid, answer });
+    // مزامنة بقية نوافذ نفس المستخدم (قبلت من نافذة — أغلق الرنين في الأخرى)
+    emitToUser(uid, "call:taken", { from: uid }, socket.id);
+  });
+
+  socket.on("call:ice", ({ to, candidate }) => {
+    if (!checkCallRate(socket)) return;
+    if (activeCalls.get(uid) !== to) return;
+    if (!candidate || typeof candidate !== "object" || typeof candidate.candidate !== "string") return;
+    emitToUser(to, "call:ice", { from: uid, candidate });
+  });
+
+  socket.on("call:reject", ({ to }) => {
+    if (activeCalls.get(uid) === to) clearCall(uid, to);
+    emitToUser(to, "call:rejected", { from: uid });
+  });
+
+  socket.on("call:end", ({ to }) => {
+    if (activeCalls.get(uid) === to) clearCall(uid, to);
+    emitToUser(to, "call:ended", { from: uid });
+  });
+
+  socket.on("call:cancel", ({ to }) => {
+    if (activeCalls.get(uid) === to) clearCall(uid, to);
+    emitToUser(to, "call:cancelled", { from: uid });
+  });
+
   socket.on("disconnect", () => {
     presence.get(uid)?.delete(socket.id);
     if (presence.get(uid)?.size === 0) { presence.delete(uid); broadcastPresence(uid, false); }
+    // إن قطع أثناء مكالمة: أبلغ الطرف الآخر
+    const peer = activeCalls.get(uid);
+    if (peer !== undefined) { clearCall(uid, peer); emitToUser(peer, "call:ended", { from: uid }); }
   });
 });
 
