@@ -15,3 +15,11 @@ Thumbs.db
 # Logs
 *.log
 .vercel
+
+# قاعدة البيانات والملفات المحلية
+data/
+server/data/
+*.db
+*.db-shm
+*.db-wal
+uploads/
