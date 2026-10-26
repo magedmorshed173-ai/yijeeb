@@ -87,9 +87,13 @@ npm start
 
 ## النشر على Render
 
-1. المستودع جاهز — في Render: **New → Blueprint** واختر `yijeeb`
-2. Render يقرأ `render.yaml` تلقائيًا (JWT_SECRET يُولَّد تلقائيًا، VAPID مفاتيح الإشعارات تُولَّد أول إقلاع)
-3. **مهم**: الخطة المجانية تفقد البيانات عند كل نشر. للإنتاج رقِّ إلى Starter وأضف قرصًا:
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/magedmorshed173-ai/yijeeb)
+
+بضغطة واحدة: الزر يقرأ `render.yaml` تلقائيًا ويُنشئ الخدمة كاملة (JWT_SECRET يُولَّد تلقائيًا، مفاتيح VAPID أول إقلاع).
+
+أو يدويًا: في Render: **New → Blueprint** واختر `yijeeb`
+
+**مهم**: الخطة المجانية تفقد البيانات عند كل نشر. للإنتاج رقِّ إلى Starter وأضف قرصًا:
    ```yaml
    plan: starter
    disk:
