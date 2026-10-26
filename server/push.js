@@ -1,4 +1,4 @@
-// إشعارات Web Push عبر VAPID — بلا Firebase وبلا اعتماد على غوغل
+// إشعارات Web Push عبر VAPID — بلا وسيط خارجي
 // الاشتراكات تُخزَّن في device_tokens (platform = 'web') كسلسلة JSON
 const webpush = require("web-push");
 const path = require("path");
@@ -31,7 +31,7 @@ function init() {
 
   try {
     webpush.setVapidDetails(
-      process.env.VAPID_SUBJECT || "mailto:hello@yijeeb.app",
+      process.env.VAPID_SUBJECT || "mailto:chatyijeeb@gmail.com",
       keys.publicKey,
       keys.privateKey
     );
