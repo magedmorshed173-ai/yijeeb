@@ -35,6 +35,19 @@ app.use("/api/auth", authRouter);
 // ===== Health + Stats =====
 app.get("/health", (_q, res) => res.json({ ok: true, app: "yijeeb-chat", uptime: process.uptime(), ...stats() }));
 
+// ===== Digital Asset Links — حزمة أندرويد (TWA من PWABuilder) =====
+// يزيل شريط العنوان في تطبيق أندرويد. بعد بناء الحزمة عيّن في Render:
+//   TWA_PACKAGE = اسم الحزمة (مثل app.yijeeb.twa)   TWA_SHA256 = بصمة شهادة التوقيع
+app.get("/.well-known/assetlinks.json", (_q, res) => {
+  const pkg = process.env.TWA_PACKAGE;
+  const fp = process.env.TWA_SHA256;
+  if (!pkg || !fp) return res.json([]);
+  res.json([{
+    relation: ["delegate_permission/common.handle_all_urls"],
+    target: { namespace: "android_app", package_name: pkg, sha256_cert_fingerprints: [fp] }
+  }]);
+});
+
 app.get("/api/stats", (req, res) => {
   const key = req.query.key;
   if (!process.env.STATS_KEY || key !== process.env.STATS_KEY) return res.status(403).json({ error: "forbidden" });

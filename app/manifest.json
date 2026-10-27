@@ -1,12 +1,29 @@
 {
+  "id": "/",
   "name": "يجيب — دردشة خفيفة ومشفرة",
   "short_name": "يجيب",
+  "description": "دردشة عربية خفيفة ومشفرة طرفًا لطرف: رسائل، صوتيات، مكالمات، وخصوصية كاملة.",
   "start_url": "/",
+  "scope": "/",
   "display": "standalone",
+  "orientation": "any",
+  "lang": "ar",
+  "dir": "rtl",
   "background_color": "#042F2E",
   "theme_color": "#0D9488",
+  "categories": ["social", "communication"],
   "icons": [
-    { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
-    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png" }
+    { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/icon-192-maskable.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
+    { "src": "/icons/icon-512-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    {
+      "name": "افتح يجيب",
+      "short_name": "يجيب",
+      "url": "/",
+      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
+    }
   ]
 }
