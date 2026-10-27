@@ -50,6 +50,7 @@
 | ◉ | **ستوريز** | 24 ساعة، مشفرة |
 | 🌍 | **i18n** | عربي / English / Français |
 | 📱 | **PWA** | قابل للتثبيت + عمل دون اتصال |
+| 🖥️ | **كل المنصات** | أندرويد (Termux) · iOS · ويندوز · لينكس · ماك · Docker — بسطر واحد |
 | 🛡️ | **حماية الخادم** | Helmet + CSP + Rate limits + JWT |
 
 ## البنية
@@ -69,21 +70,44 @@ yijeeb/
 │   ├── security.js     ← Helmet + Rate limits
 │   └── push.js         ← Web Push VAPID
 ├── render.yaml         ← نشر Render بضغطة
+├── Dockerfile          ← صورة Docker لكل المنصات + docker-compose.yml
+├── scripts/            ← مثبّتات كل المنصات (Termux/لينكس/ماك/ويندوز) + المُشغّلات
 └── brand/              ← أصول الهوية البصرية
 ```
 
-## التشغيل المحلي
+## يعمل على كل المنصات
+
+| المنصة | الطريقة | الأمر |
+|--------|---------|-------|
+| 🤖 **أندرويد** | Termux — خادم كامل على هاتفك | `pkg install -y curl && curl -fsSL https://raw.githubusercontent.com/magedmorshed173-ai/yijeeb/main/scripts/install-termux.sh \| bash` |
+| 🍎 **آيفون / آيباد** | سفاري ← مشاركة ← «إضافة إلى الشاشة الرئيسية» | — |
+| 🪟 **ويندوز 10/11** | PowerShell | `irm https://raw.githubusercontent.com/magedmorshed173-ai/yijeeb/main/scripts/install-windows.ps1 \| iex` |
+| 🐧 **لينكس** | Bash | `curl -fsSL https://raw.githubusercontent.com/magedmorshed173-ai/yijeeb/main/scripts/install-linux.sh \| bash` |
+| 🍏 **macOS** | Bash + Homebrew | `curl -fsSL https://raw.githubusercontent.com/magedmorshed173-ai/yijeeb/main/scripts/install-mac.sh \| bash` |
+| 🐳 **Docker** | أي نظام تشغيل | `git clone https://github.com/magedmorshed173-ai/yijeeb.git && cd yijeeb && docker compose up -d` |
+
+كل سكربت تثبيت: يتحقق من Node.js 22+ ويثبّته إن غاب ← ينزّل يجيب (أو يحدّثه) ← يجهّز الخادم ← يولّد `JWT_SECRET` ويحفظه تلقائيًا ← يشغّل ويفتح المتصفح.
+
+**لإعادة التشغيل لاحقًا:**
+
+- لينكس / ماك / Termux: `bash ~/yijeeb/scripts/start.sh`
+- ويندوز: انقر مرتين على `C:\Users\اسمك\yijeeb\scripts\start-yijeeb.bat`
+- Docker: `docker compose up -d`
+
+بعد الإقلاع افتح `http://localhost:3000` — ومن أي جهاز آخر على نفس الشبكة: `http://IP-الجهاز:3000`.
+
+## التشغيل اليدوي (للمطورين)
 
 ```bash
 # يتطلب Node.js 22.13+ (لأن node:sqlite مدمج)
-export JWT_SECRET=$(node -e "console.log(require('crypto').randomBytes(48).toString('hex'))")
+git clone https://github.com/magedmorshed173-ai/yijeeb.git && cd yijeeb
 cd server
 npm install
-npm start
+JWT_SECRET=$(node -e "console.log(require('crypto').randomBytes(48).toString('hex'))") npm start
 # افتح http://localhost:3000
 ```
 
-سجّل حسابين (من متصفحين أو نافذتين متخفيتين) وجرّب: محادثة خاصة، مجموعة، رسالة صوتية، مرفق، ومكالمة صوت/فيديو.
+سجّل حسابين (من متصفحين أو نافذتين متخفيتين) وجرّب: محادثة خاصة، مجموعة، رسالة صوتية، مرفق، ومكالمة صوت/فيديو. لكل الإعدادات انظر `.env.example`.
 
 ## النشر على Render
 
@@ -124,6 +148,7 @@ npm start
 | **1** | صفحة هبوط + قائمة انتظار | ✅ منشورة |
 | **2** | **Chat MVP**: شات E2EE + مجموعات + مرفقات + صوتيات | ✅ |
 | **3** | مكالمات صوت وفيديو (WebRTC) | ✅ هذا الإصدار |
+| **+** | تشغيل على كل المنصات: Termux / ويندوز / لينكس / ماك / Docker + صفحة تحميل | ✅ |
 | **4** | تطبيقات iOS / Android (React Native) + متاجر | ⏳ التالية |
 | **5** | تشفير متقدم (Double Ratchet) + رسائل مختفية | ⏳ |
 
@@ -131,7 +156,7 @@ npm start
 
 - **الخادم**: Node.js 22.13+ · Express · Socket.IO · `node:sqlite` · web-push
 - **العميل**: Vanilla JS (بلا build) · Web Crypto API · WebRTC · Cairo RTL
-- **الاستضافة**: Vercel (الهبوط) + Render (الشات والمكالمات)
+- **الاستضافة**: Vercel (الهبوط) + Render (الشات والمكالمات) — أو استضفها بنفسك: Docker / Termux / أي جهاز
 
 ---
 

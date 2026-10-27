@@ -121,6 +121,30 @@ section{padding:90px 0}
 .mk.y.on{background:var(--mint);color:var(--ink)}
 .cmp li span{flex:1}
 
+/* download platforms */
+.dl-strip{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin:-26px 0 44px}
+.dl-strip span{background:var(--ink);color:var(--mint);border-radius:999px;padding:8px 20px;font-family:'Inter',sans-serif;font-weight:700;font-size:12.5px;letter-spacing:.08em}
+.dl-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:22px}
+.dl-card{background:#fff;border:1px solid var(--line);border-radius:20px;padding:24px 22px;display:flex;flex-direction:column;gap:15px;transition:.3s}
+.dl-card:hover{transform:translateY(-5px);box-shadow:0 18px 40px rgba(13,148,136,.13);border-color:rgba(13,148,136,.4)}
+.dl-head{display:flex;gap:13px;align-items:center}
+.dl-ico{width:46px;height:46px;border-radius:13px;background:linear-gradient(135deg,var(--teal),var(--teal-dark));display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 8px 18px rgba(13,148,136,.28)}
+.dl-card h3{font-size:16.5px;font-weight:800}
+.dl-sub{color:var(--muted);font-size:12.6px;line-height:1.8}
+.dl-code{display:flex;align-items:stretch;gap:8px;background:var(--ink);border-radius:13px;padding:11px;direction:ltr;text-align:left}
+.dl-code code{flex:1;font-family:'Cascadia Mono','Courier New',monospace;font-size:11.3px;color:#9fe8db;line-height:1.85;white-space:pre-wrap;word-break:break-all;min-width:0}
+.copy{flex-shrink:0;align-self:center;background:rgba(94,234,212,.14);border:1px solid rgba(94,234,212,.4);color:var(--mint);border-radius:9px;padding:8px 13px;font-family:'Cairo',sans-serif;font-weight:700;font-size:12px;cursor:pointer;transition:.2s;white-space:nowrap}
+.copy:hover{background:rgba(94,234,212,.3)}
+.copy.ok{background:var(--mint);color:var(--ink);border-color:var(--mint)}
+.dl-steps{list-style:none;counter-reset:s;display:flex;flex-direction:column;gap:9px;font-size:13px;font-weight:600;color:var(--txt)}
+.dl-steps li{display:flex;gap:10px;align-items:flex-start;line-height:1.7}
+.dl-steps li i{font-style:normal;counter-increment:s;flex-shrink:0;width:21px;height:21px;margin-top:2px;border-radius:50%;background:var(--mint-soft);color:var(--teal);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800}
+.dl-steps li i::before{content:counter(s)}
+.dl-note{text-align:center;color:var(--muted);font-size:13.5px;margin-top:36px}
+.dl-note b{color:var(--teal)}
+@media(max-width:940px){.dl-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:600px){.dl-grid{grid-template-columns:1fr}.dl-strip{margin-top:0}}
+
 /* waitlist */
 .join{position:relative;background:var(--ink);color:#fff;overflow:hidden;text-align:center}
 .join::before{content:"";position:absolute;inset:0;background:radial-gradient(560px 300px at 50% 0%,rgba(13,148,136,.45),transparent 65%)}
@@ -175,6 +199,7 @@ footer{background:#02201f;color:#8fb5af;padding:38px 0}
     <div class="nav-links">
       <a href="#features">المميزات</a>
       <a href="#why">ليش يجيب؟</a>
+      <a href="#download">التحميل</a>
       <a href="#waitlist">قريبًا</a>
     </div>
     <a class="btn btn-mint" href="#waitlist">انضم لقائمة الانتظار</a>
@@ -184,7 +209,7 @@ footer{background:#02201f;color:#8fb5af;padding:38px 0}
 <header class="hero">
   <div class="wrap hero-in">
     <div>
-      <span class="badge"><i></i> قريبًا على iOS و Android</span>
+      <span class="badge"><i></i> يعمل على Android · iOS · Windows · Linux · Mac</span>
       <h1>يجيب…<br><em>دايمًا يجيبها</em></h1>
       <div class="tag">يردّ. يجيب. يوصّل.</div>
       <p class="sub">تطبيق دردشة عربي خفيف وسريع يجمع لك كل شيء: شات نصي، رسائل صوتية، ومكالمات فيديو واضحة — بلا بطء، بلا إعلانات، وبتصميم عربي أصيل من أول لحظة.</p>
@@ -315,6 +340,68 @@ footer{background:#02201f;color:#8fb5af;padding:38px 0}
   </div>
 </section>
 
+<section id="download">
+  <div class="wrap">
+    <div class="sec-head rv">
+      <div class="kicker">التحميل</div>
+      <h2>يجيب على كل أجهزتك</h2>
+      <p>افتحه في متصفح أي جهاز وثبّته كتطبيق كامل — أو شغّل خادمك الخاص على جهازك بسطر واحد. بياناتك تبقى عندك.</p>
+    </div>
+    <div class="dl-strip rv">
+      <span>Android</span><span>iOS</span><span>Windows</span><span>macOS</span><span>Linux</span><span>Docker</span>
+    </div>
+    <div class="dl-grid">
+      <div class="dl-card rv">
+        <div class="dl-head">
+          <div class="dl-ico"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 15a5 5 0 0 1 10 0v4H7z"/><path d="M9.5 9L8 6.5M14.5 9L16 6.5"/><circle cx="10" cy="12.5" r="1"/><circle cx="14" cy="12.5" r="1"/></svg></div>
+          <div><h3>أندرويد</h3><p class="dl-sub">خادم كامل على هاتفك عبر Termux — أو ثبّت التطبيق من خادم يجيب</p></div>
+        </div>
+        <div class="dl-code"><code>pkg install -y curl &amp;&amp; curl -fsSL https://raw.githubusercontent.com/magedmorshed173-ai/yijeeb/main/scripts/install-termux.sh | bash</code><button class="copy" type="button">نسخ</button></div>
+      </div>
+      <div class="dl-card rv">
+        <div class="dl-head">
+          <div class="dl-ico"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="2" width="12" height="20" rx="3"/><path d="M11 18h2"/></svg></div>
+          <div><h3>آيفون وآيباد</h3><p class="dl-sub">يعمل مباشرة في سفاري — بلا متجر، ويُثبَّت كتطبيق بأيقونته</p></div>
+        </div>
+        <ol class="dl-steps">
+          <li><i></i><span>افتح رابط يجيب في متصفح سفاري</span></li>
+          <li><i></i><span>اضغط زر المشاركة أعلى الشاشة</span></li>
+          <li><i></i><span>اختر «إضافة إلى الشاشة الرئيسية»</span></li>
+        </ol>
+      </div>
+      <div class="dl-card rv">
+        <div class="dl-head">
+          <div class="dl-ico"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="8" height="8" rx="1.5"/><rect x="13" y="3" width="8" height="8" rx="1.5"/><rect x="3" y="13" width="8" height="8" rx="1.5"/><rect x="13" y="13" width="8" height="8" rx="1.5"/></svg></div>
+          <div><h3>ويندوز</h3><p class="dl-sub">ويندوز 10 و 11 — يثبّت Node و Git تلقائيًا ثم يشغّل يجيب ويفتح المتصفح</p></div>
+        </div>
+        <div class="dl-code"><code>irm https://raw.githubusercontent.com/magedmorshed173-ai/yijeeb/main/scripts/install-windows.ps1 | iex</code><button class="copy" type="button">نسخ</button></div>
+      </div>
+      <div class="dl-card rv">
+        <div class="dl-head">
+          <div class="dl-ico"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 17l6-5-6-5"/><path d="M12 19h8"/></svg></div>
+          <div><h3>لينكس</h3><p class="dl-sub">Ubuntu · Debian · Fedora · Arch · Alpine — يكتشف توزيعتك ويثبّت كل شيء</p></div>
+        </div>
+        <div class="dl-code"><code>curl -fsSL https://raw.githubusercontent.com/magedmorshed173-ai/yijeeb/main/scripts/install-linux.sh | bash</code><button class="copy" type="button">نسخ</button></div>
+      </div>
+      <div class="dl-card rv">
+        <div class="dl-head">
+          <div class="dl-ico"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 3a3 3 0 0 0-3 3v12a3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3H6a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3V6a3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3h12a3 3 0 0 0 3-3 3 3 0 0 0-3-3z"/></svg></div>
+          <div><h3>ماك</h3><p class="dl-sub">عبر Homebrew — يثبّت Node ويشغّل يجيب على جهاز ماك</p></div>
+        </div>
+        <div class="dl-code"><code>curl -fsSL https://raw.githubusercontent.com/magedmorshed173-ai/yijeeb/main/scripts/install-mac.sh | bash</code><button class="copy" type="button">نسخ</button></div>
+      </div>
+      <div class="dl-card rv">
+        <div class="dl-head">
+          <div class="dl-ico"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><path d="M3.27 6.96L12 12.01l8.73-5.05"/><path d="M12 22.08V12"/></svg></div>
+          <div><h3>Docker</h3><p class="dl-sub">صورة واحدة تعمل في أي مكان — بيانات دائمة عبر مجلد /data</p></div>
+        </div>
+        <div class="dl-code"><code>git clone https://github.com/magedmorshed173-ai/yijeeb.git &amp;&amp; cd yijeeb &amp;&amp; docker compose up -d</code><button class="copy" type="button">نسخ</button></div>
+      </div>
+    </div>
+    <p class="dl-note rv">عند التشغيل المحلي تُخزَّن كل البيانات في مجلد <b>data</b> على جهازك — قاعدة بيانات ومرفقات ومفاتيح، بلا سحابة ولا وسيط.</p>
+  </div>
+</section>
+
 <section class="join" id="waitlist">
   <div class="wrap">
     <div class="kicker" style="color:var(--mint)">قريبًا</div>
@@ -349,6 +436,9 @@ f.addEventListener('submit',e=>{
   f.style.display='none';
   document.getElementById('wlOk').style.display='block';
 });
+function copyText(t,cb){if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(t).then(cb).catch(function(){fallbackCopy(t,cb)})}else{fallbackCopy(t,cb)}}
+function fallbackCopy(t,cb){var x=document.createElement('textarea');x.value=t;x.style.position='fixed';x.style.opacity='0';document.body.appendChild(x);x.select();try{document.execCommand('copy')}catch(e){}document.body.removeChild(x);cb()}
+document.querySelectorAll('.copy').forEach(function(b){b.addEventListener('click',function(){var box=b.closest('.dl-code');var t=box?box.querySelector('code').textContent:'';copyText(t,function(){var o=b.textContent;b.textContent='تم النسخ ✓';b.classList.add('ok');setTimeout(function(){b.textContent=o;b.classList.remove('ok')},1800)})})});
 const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}}),{threshold:.15});
 document.querySelectorAll('.rv').forEach(el=>io.observe(el));
 </script>

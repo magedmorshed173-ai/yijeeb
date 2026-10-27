@@ -1,0 +1,21 @@
+services:
+  yijeeb:
+    build: .
+    container_name: yijeeb
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    volumes:
+      - yijeeb-data:/data
+    # اختياري: تجاوز الإعدادات — انظر .env.example
+    # environment:
+    #   JWT_SECRET: "ضع-سرًا-عشوائيًا-طويلًا-هنا"
+    #   WEB_PUSH_PUBLIC_KEY: ""
+    #   WEB_PUSH_PRIVATE_KEY: ""
+    #   VAPID_SUBJECT: "mailto:chatyijeeb@gmail.com"
+    #   STATS_KEY: ""
+    #   TWA_PACKAGE: "app.yijeeb.twa"
+    #   TWA_SHA256: ""
+
+volumes:
+  yijeeb-data:
